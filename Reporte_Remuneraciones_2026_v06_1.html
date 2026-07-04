@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte Remuneraciones 2026 — Entel Digital</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --entel-blue: #1A3C6B;
+  --entel-mid: #2E5FA3;
+  --entel-orange: #C45911;
+  --bg: #F0F4F8;
+  --surface: #FFFFFF;
+  --surface2: #F7F9FC;
+  --border: #DDE3EC;
+  --text: #1A2535;
+  --text-muted: #5A6A82;
+  --green: #1D6F42;
+  --green-bg: #E6F4EC;
+  --red: #A51B1B;
+  --red-bg: #FCEAEA;
+  --line-real25: #1A3C6B;
+  --line-plan26: #C45911;
+  --line-real26: #2E5FA3;
+  --line-hc: #D94F4F;
+}
+body.dark-theme {
+  --entel-blue: #14243D;
+  --entel-mid: #2E5FA3;
+  --entel-orange: #E07A2E;
+  --bg: #0F1620;
+  --surface: #1B2530;
+  --surface2: #141C26;
+  --border: #2C3846;
+  --text: #E7ECF3;
+  --text-muted: #93A1B5;
+  --green: #4BC584;
+  --green-bg: rgba(29,111,66,0.25);
+  --red: #E37070;
+  --red-bg: rgba(165,27,27,0.25);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 13px; transition: background-color .2s ease, color .2s ease; }
+.chart-card, .table-card, .full-table-card, .app-footer { transition: background-color .2s ease, border-color .2s ease; }
+
+/* HEADER */
+.app-header { background: var(--entel-blue); color: white; padding: 0; display: flex; align-items: stretch; }
+.header-brand { padding: 14px 24px; border-right: 1px solid rgba(255,255,255,0.15); display: flex; flex-direction: column; justify-content: center; min-width: 220px; }
+.header-brand .label { font-size: 10px; letter-spacing: 0.08em; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 2px; }
+.header-brand .title { font-size: 16px; font-weight: 600; }
+.header-nav { display: flex; align-items: stretch; flex: 1; }
+.nav-tab { padding: 0 18px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.65); cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 6px; border-bottom: 3px solid transparent; transition: all 0.15s; white-space: nowrap; }
+.nav-tab:hover { color: white; background: rgba(255,255,255,0.07); }
+.nav-tab.active { color: white; border-bottom-color: var(--entel-orange); }
+.header-controls { padding: 10px 20px; display: flex; align-items: center; gap: 10px; border-left: 1px solid rgba(255,255,255,0.15); }
+.header-controls label { font-size: 11px; color: rgba(255,255,255,0.7); white-space: nowrap; }
+.month-select { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+.month-select option { background: var(--entel-blue); }
+
+/* LAYOUT */
+.page { display: none; padding: 20px 24px; }
+.page.active { display: block; }
+
+/* SECTION HEADER */
+.section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; margin-top: 8px; }
+.section-badge { background: var(--entel-orange); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
+.section-title { font-size: 15px; font-weight: 600; color: var(--entel-blue); }
+.section-divider { height: 1px; background: var(--border); flex: 1; }
+
+/* CHART GRID */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.chart-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-align: center; }
+.chart-wrap { position: relative; height: 220px; }
+
+/* LEGEND */
+.chart-legend { display: flex; justify-content: center; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+.legend-dot { width: 24px; height: 3px; border-radius: 2px; }
+.legend-dot.dashed { background: repeating-linear-gradient(to right, var(--line-hc) 0, var(--line-hc) 4px, transparent 4px, transparent 8px); }
+
+/* TABLES */
+.tables-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.table-card-header { background: var(--entel-blue); color: white; padding: 9px 14px; font-size: 12px; font-weight: 600; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th { background: var(--surface2); padding: 7px 10px; text-align: right; font-weight: 600; color: var(--text-muted); font-size: 11px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.data-table th:first-child { text-align: left; }
+.data-table td { padding: 7px 10px; text-align: right; border-bottom: 1px solid #F0F4F8; }
+.data-table td:first-child { text-align: left; font-weight: 500; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr.total-row td { background: #EFF3FA; font-weight: 700; border-top: 1px solid var(--border); }
+.data-table tr:hover td { background: #F7FAFF; }
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.badge-pos { background: var(--green-bg); color: var(--green); padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+.badge-neg { background: var(--red-bg); color: var(--red); padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+
+/* ANUAL TABLE */
+.full-table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+.full-table-card .table-card-header { background: var(--entel-blue); }
+.data-table th.center { text-align: center; }
+.data-table td.center { text-align: center; }
+.col-group-header { background: #2E5FA3; color: white; text-align: center; font-size: 11px; font-weight: 600; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+
+/* DOTACION TABLE */
+.dotacion-outer { overflow-x: auto; }
+.dotacion-table { min-width: 700px; width: 100%; border-collapse: collapse; font-size: 11px; }
+.dotacion-table th { background: var(--entel-blue); color: white; padding: 6px 8px; text-align: center; font-weight: 600; white-space: nowrap; border: 1px solid rgba(255,255,255,0.2); }
+.dotacion-table th.ceco-col { text-align: left; min-width: 80px; }
+.dotacion-table td { padding: 5px 8px; text-align: center; border: 1px solid var(--border); }
+.dotacion-table td.ceco-label { text-align: left; font-weight: 500; background: var(--surface2); }
+.dotacion-table tr.group-sep td { height: 6px; background: var(--bg); border-color: var(--bg); }
+.dotacion-table tr.total-row td { background: #1A3C6B; color: white; font-weight: 700; }
+.dotacion-table tr.subtotal-row td { background: #EFF3FA; font-weight: 600; font-size: 11px; }
+.dotacion-table tr:hover td:not(.group-sep td) { background: #EFF7FF; }
+.dotacion-table td.zero { color: #CCC; }
+.dotacion-table .year-header { background: var(--entel-orange); }
+
+/* HE TABLES */
+.he-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+/* FOOTER */
+.app-footer { text-align: center; padding: 16px; color: var(--text-muted); font-size: 11px; border-top: 1px solid var(--border); background: var(--surface); margin-top: 8px; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .charts-grid, .tables-row, .he-grid { grid-template-columns: 1fr; }
+  .header-nav { overflow-x: auto; }
+}
+
+/* THEME TOGGLE + CECO SELECTOR (dark-mode-aware overrides) */
+.theme-toggle { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
+.theme-toggle:hover { background: rgba(255,255,255,0.22); }
+.informe-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
+.informe-btn:hover { background: rgba(255,255,255,0.22); }
+.informe-btn:active { transform: translateY(1px); }
+.ceco-select { min-width: 165px; }
+.muted-cell { color: #CCC; }
+body.dark-theme .muted-cell { color: #56626F; }
+body.dark-theme .data-table tr.total-row td { background: #232E3D; }
+body.dark-theme .data-table td { border-bottom-color: #232E3D; }
+body.dark-theme .data-table tr:hover td { background: #202A3A; }
+body.dark-theme .dotacion-table tr.subtotal-row td { background: #232E3D; }
+body.dark-theme .dotacion-table tr:hover td:not(.group-sep td) { background: #202A3A; }
+body.dark-theme .dotacion-table td.zero { color: #56626F; }
+body.dark-theme .month-select option, body.dark-theme .month-select optgroup { background: var(--entel-blue); color: white; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-brand">
+    <span class="label">Entel Digital · VP ND B2B</span>
+    <span class="title">Remuneraciones 2026</span>
+  </div>
+  <nav class="header-nav">
+    <button class="nav-tab active" onclick="showPage('graficos')">📈 Gráficos</button>
+    <button class="nav-tab" onclick="showPage('mensual')">📋 Vista Mensual</button>
+    <button class="nav-tab" onclick="showPage('anual')">📅 Vista Anual</button>
+    <button class="nav-tab" onclick="showPage('horas')">⏱ Horas Extra</button>
+    <button class="nav-tab" onclick="showPage('dotacion')">👥 Dotación</button>
+  </nav>
+  <div class="header-controls">
+    <label>Mes activo:</label>
+    <select class="month-select" id="mesSelector" onchange="onMesChange()">
+      <option value="0">Enero</option>
+      <option value="1">Febrero</option>
+      <option value="2">Marzo</option>
+      <option value="3" selected>Abril</option>
+      <option value="4">Mayo</option>
+      <option value="5">Junio</option>
+      <option value="6">Julio</option>
+      <option value="7">Agosto</option>
+      <option value="8">Septiembre</option>
+      <option value="9">Octubre</option>
+      <option value="10">Noviembre</option>
+      <option value="11">Diciembre</option>
+    </select>
+    <label>CeCo:</label>
+    <select class="month-select ceco-select" id="cecoSelector" onchange="onCecoChange()">
+      <option value="all" selected>Todos los CeCo</option>
+    </select>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema claro/oscuro" aria-label="Cambiar a tema oscuro">🌙</button>
+    <button class="informe-btn" id="informeBtn" onclick="downloadInforme()" title="Descarga el último Informe de Remuneraciones y Dotación generado, en formato PDF no editable" aria-label="Descargar Informe PDF">📄</button>
+  </div>
+</header>
+
+<!-- PAGE: GRAFICOS -->
+<div class="page active" id="page-graficos">
+
+  <div class="section-head">
+    <span class="section-badge">1</span>
+    <span class="section-title">Gerencia</span>
+    <div class="section-divider"></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Evolución mensual de remuneraciones</div>
+      <div class="chart-wrap"><canvas id="c-ger-remu"></canvas></div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real25)"></span>2025 R</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-plan26)"></span>2026 P</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real26)"></span>2026 R</span>
+        <span class="legend-item"><span class="legend-dot dashed"></span>HC 2026</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Evolución mensual de sueldo base</div>
+      <div class="chart-wrap"><canvas id="c-ger-sb"></canvas></div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real25)"></span>2025 R</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-plan26)"></span>2026 P</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real26)"></span>2026 R</span>
+        <span class="legend-item"><span class="legend-dot dashed"></span>HC 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <span class="section-badge">2</span>
+    <span class="section-title">Soporte</span>
+    <div class="section-divider"></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Evolución mensual de remuneraciones CeCos operacionales + Gerencia</div>
+      <div class="chart-wrap"><canvas id="c-sop-remu"></canvas></div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real25)"></span>2025 R</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-plan26)"></span>2026 P</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real26)"></span>2026 R</span>
+        <span class="legend-item"><span class="legend-dot dashed"></span>HC 2026</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Evolución mensual de sueldo base área soporte al negocio</div>
+      <div class="chart-wrap"><canvas id="c-sop-sb"></canvas></div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real25)"></span>2025 R</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-plan26)"></span>2026 P</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real26)"></span>2026 R</span>
+        <span class="legend-item"><span class="legend-dot dashed"></span>HC 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <span class="section-badge">3</span>
+    <span class="section-title">Cloud</span>
+    <div class="section-divider"></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Evolución mensual de remuneraciones CLOUD</div>
+      <div class="chart-wrap"><canvas id="c-cloud-remu"></canvas></div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real25)"></span>2025 R</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-plan26)"></span>2026 P</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real26)"></span>2026 R</span>
+        <span class="legend-item"><span class="legend-dot dashed"></span>HC 2026</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Evolución mensual de sueldo base CLOUD</div>
+      <div class="chart-wrap"><canvas id="c-cloud-sb"></canvas></div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real25)"></span>2025 R</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-plan26)"></span>2026 P</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real26)"></span>2026 R</span>
+        <span class="legend-item"><span class="legend-dot dashed"></span>HC 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <span class="section-badge">4</span>
+    <span class="section-title">IoT</span>
+    <div class="section-divider"></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Evolución mensual de remuneraciones IOT</div>
+      <div class="chart-wrap"><canvas id="c-iot-remu"></canvas></div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real25)"></span>2025 R</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-plan26)"></span>2026 P</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real26)"></span>2026 R</span>
+        <span class="legend-item"><span class="legend-dot dashed"></span>HC 2026</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Evolución mensual de sueldo base IOT</div>
+      <div class="chart-wrap"><canvas id="c-iot-sb"></canvas></div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real25)"></span>2025 R</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-plan26)"></span>2026 P</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-real26)"></span>2026 R</span>
+        <span class="legend-item"><span class="legend-dot dashed"></span>HC 2026</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: MENSUAL -->
+<div class="page" id="page-mensual">
+  <div class="tables-row">
+    <div class="table-card">
+      <div class="table-card-header">Remuneración respecto al año anterior</div>
+      <table class="data-table" id="t-remu-anio"></table>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header">Sueldo base</div>
+      <table class="data-table" id="t-sb-anio"></table>
+    </div>
+  </div>
+  <div class="tables-row">
+    <div class="table-card">
+      <div class="table-card-header">Remuneración total (acumulada al mes)</div>
+      <table class="data-table" id="t-remu-acum"></table>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header">Sueldo base (acumulado al mes)</div>
+      <table class="data-table" id="t-sb-acum"></table>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: ANUAL -->
+<div class="page" id="page-anual">
+  <div class="full-table-card">
+    <div class="table-card-header">Vista anual (in vs out) — Enero 2026 vs Diciembre 2026</div>
+    <table class="data-table" id="t-anual"></table>
+  </div>
+</div>
+
+<!-- PAGE: HORAS EXTRA -->
+<div class="page" id="page-horas">
+  <div class="he-grid">
+    <div class="table-card">
+      <div class="table-card-header">Horas extra mensual · 2025R vs 2026 Plan</div>
+      <table class="data-table" id="t-he-mes-plan"></table>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header">Horas extra acumuladas · 2025R vs 2026 Plan</div>
+      <table class="data-table" id="t-he-acum-plan"></table>
+    </div>
+  </div>
+  <div class="he-grid">
+    <div class="table-card">
+      <div class="table-card-header">Horas extra mensual · 2026R vs 2026 Plan</div>
+      <table class="data-table" id="t-he-mes-real"></table>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header">Horas extra acumuladas · 2026R vs 2026 Plan</div>
+      <table class="data-table" id="t-he-acum-real"></table>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: DOTACION -->
+<div class="page" id="page-dotacion">
+  <div class="full-table-card" style="margin-bottom:20px">
+    <div class="table-card-header">Dotación 2025 · Colaboradores por CeCo (mensual)</div>
+    <div class="dotacion-outer">
+      <table class="dotacion-table" id="t-dot-2025"></table>
+    </div>
+  </div>
+  <div class="full-table-card">
+    <div class="table-card-header">Dotación 2026 · Colaboradores por CeCo (mensual)</div>
+    <div class="dotacion-outer">
+      <table class="dotacion-table" id="t-dot-2026"></table>
+    </div>
+  </div>
+</div>
+
+<footer class="app-footer">
+  Reporte Remuneraciones 2026 · Entel Digital — VP Negocios Digitales B2B · Actualización mensual
+</footer>
+
+<script>
+// ─── RAW DATA ────────────────────────────────────────────────────────────────
+const RAW = {"remu_data":{"41836":{"r2025":[5505737,5771858,5666170,5580198,5565387,5576106,5667720,5663826,5894455,5665344,5724129,5964603],"p2026":[5554366,5554366,5697424,5642806,5647771,5672598,5650502,5675577,5898832,5650502,5653260,5901741]},"41833":{"r2025":[10156937,16721467,17263699,16617557,16702620,17123437,19117579,24432790,22864566,21902314,22365955,23381205],"p2026":[20758024,20758024,21259994,21097240,21112035,21186014,21120173,21194892,21864859,21120173,21128392,21873526]},"41831":{"r2025":[14137541,14587719,15758411,14470682,14348221,14421634,14699998,0,0,0,0,0],"p2026":[17485598,17955008,18034365,18443857,18396910,18612621,18477104,18625155,20352637,18644347,18707374,20514966]},"41880":{"r2025":[12818414,13548875,13484842,13718972,13506276,9442962,9701022,9593373,0,9558214,9664083,10448250],"p2026":[14855891,14855891,15185123,15089584,15098269,15141696,15103046,15146907,15595933,15103046,15107871,15601021]},"41835":{"r2025":[0,11510412,11394928,11427379,16938481,16915171,17245881,17638288,20807200,19591541,19789114,27324932],"p2026":[23426032,23426032,23991447,24362655,24382880,24484003,24394004,24496137,25621709,24394004,24405238,25633557]},"41870":{"r2025":[33197614,33534423,34503501,34165321,36440327,36482819,37787064,0,0,0,0,0],"p2026":[30639825,30639825,31416694,31117428,31144635,31280665,31159598,31296986,32875028,31159598,31174711,32890964]},"41840":{"r2025":[8845201,8845201,9111910,9612664,9621609,9618381,9790192,9772797,10226160,9748984,9840402,10442798],"p2026":[9520511,9520511,9751061,9663040,9671042,9711052,9675442,9715852,10166259,9675442,9679888,10170946]},"41800":{"r2025":[14009730,13560952,29802200,14142723,14151204,14337833,15716004,14099786,14412915,15322234,17553442,18137470],"p2026":[16257454,17464505,15793442,16489300,14664023,15452966,15338835,15127752,15267515,15089630,15236999,16607473]},"40540":{"r2025":[14669459,14226908,15216773,15017772,9830985,9996564,10120170,10030246,11493223,10689280,10763587,14260663],"p2026":[12440561,12440561,12720887,12629199,12637535,12679211,12642119,12684212,13600516,12642119,12646749,13605397]},"40671":{"r2025":[7872644,7868533,7985046,7999709,8268029,7995617,8100049,7830614,0,0,0,0],"p2026":[0,0,0,0,0,0,0,0,0,0,0,0]},"41850":{"r2025":[0,79144175,81814985,82835726,73672857,73239131,79512793,77944969,80637854,70233396,65946015,70834883],"p2026":[73828507,74903967,77982606,78819626,78905445,79334542,78952647,79386031,85511376,78952647,79000318,85561647]},"41832":{"r2025":[30149130,29569620,30792820,30749390,30003752,30111214,23655132,25616013,22097468,30555723,34835947,37755467],"p2026":[20379929,20379929,20871765,20683984,20701056,20786411,20710446,20796651,22161880,20710446,20719927,22171879]},"30676":{"r2025":[56251105,60864806,55187186,57494410,52540685,53197712,54404744,56708445,53831303,58390896,49033905,59707512],"p2026":[48324238,48324238,49238657,48887780,48919679,49079168,48937224,49098306,51600010,48937224,48954944,51618695]},"41882":{"r2025":[14105486,15310478,24470850,28836318,33850616,31803852,27110567,27671480,29718041,22854986,23258759,26578849],"p2026":[28104285,28609469,29312520,29027685,29053579,29183049,29067820,29198587,31712416,29067820,29082205,31727583]},"41812":{"r2025":[19945306,18159236,18801957,18373002,18295882,18278785,18788452,15604398,15024724,13712247,12345075,14910970],"p2026":[13392640,13392640,13719067,13594439,13605768,13662417,13612001,13669216,14579470,13612001,13618295,14586107]},"41881":{"r2025":[9958781,16253127,9652443,12869240,12357862,13000898,18371736,18030186,0,0,0,0],"p2026":[0,0,0,0,0,0,0,0,0,0,0,0]}},"sb_data":{"41836":{"sb2025":[4922135,4922135,4996951,4996951,4996951,4996951,4686673,5021436,5021436,5021436,5091736,5091736],"sb2026p":[4875377,4875377,4961425,4961425,4961425,4961425,4961425,4961425,4961425,4961425,4961425,4961425]},"41833":{"sb2025":[8966136,13532000,13737687,14890214,14890214,14890214,16635854,21052136,19379458,19379458,19642716,19889251],"sb2026p":[18815768,18815768,19147857,19147857,19147857,19147857,19147857,19147857,19147857,19147857,19147857,19147857]},"41831":{"sb2025":[11141842,11141842,10895729,11311198,11311198,11311198,11366623,0,0,0,0,0],"sb2026p":[13125580,13125580,13357239,13357239,13357239,13357239,13357239,13357239,13357239,13357239,13357239,13357239]},"41880":{"sb2025":[10650426,11229481,11400168,11400168,11400168,7798986,7837201,7837201,0,7837201,7946922,7946922],"sb2026p":[13003714,13003714,13233223,13233223,13233223,13233223,13233223,13233223,13233223,13233223,13233223,13233223]},"41835":{"sb2025":[0,10114004,10267737,10267737,15215427,15215427,15289983,15652676,17182646,17182646,17423203,21393559],"sb2026p":[20982854,20982854,21353190,21353190,21353190,21353190,21353190,21353190,21353190,21353190,21353190,21353190]},"41870":{"sb2025":[29655278,29655278,30106037,30106037,32140430,32140430,32297920,0,0,0,0,0],"sb2026p":[26317987,26317987,26782486,26782486,26782486,26782486,26782486,26782486,26782486,26782486,26782486,26782486]},"41840":{"sb2025":[7932463,7932463,8053037,8053037,8053037,8053037,8092497,8092497,8092497,8092497,8205792,8205792],"sb2026p":[7857111,7857111,7995785,7995785,7995785,7995785,7995785,7995785,7995785,7995785,7995785,7995785]},"41800":{"sb2025":[12516762,12515556,20257507,12828394,12821344,12837273,12885167,12898395,13054059,12887530,15524427,15475078],"sb2026p":[12674356,12674356,12898052,12898052,12898052,12898052,12898052,12898052,12898052,12898052,12898052,12898052]},"40671":{"sb2025":[7289042,7289042,7399835,7399835,7399835,7399835,7436094,7188224,0,0,0,0],"sb2026p":[0,0,0,0,0,0,0,0,0,0,0,0]},"40540":{"sb2025":[12092503,11582089,12572407,12572407,7886849,7886849,7925495,7925495,8405080,8473441,8668148,10490906],"sb2026p":[10460602,10460602,10645226,10645226,10645226,10645226,10645226,10645226,10645226,10645226,10645226,10645226]},"41850":{"sb2025":[0,66263348,66257845,69214248,61649082,61443845,64753157,64576575,63701231,57935232,55088512,54866809],"sb2026p":[61848353,61848353,62939944,62939944,62939944,62939944,62939944,62939944,62939944,62939944,62939944,62939944]},"41832":{"sb2025":[24053183,24529374,24902221,24902221,24902221,24961320,19120583,21576476,17263842,25260513,28454715,28889842],"sb2026p":[16761689,16761689,17057524,17057524,17057524,17057524,17057524,17057524,17057524,17057524,17057524,17057524]},"30676":{"sb2025":[35727130,41511170,42426680,39165739,33085633,33085633,35931665,36437497,31989877,33332848,33799508,34159728],"sb2026p":[31059387,31059387,31607569,31607569,31607569,31607569,31607569,31607569,31607569,31607569,31607569,31607569]},"41882":{"sb2025":[10696568,12399001,19261539,23019000,27704558,26506220,21633703,22737037,22737037,18978545,19244244,20234848],"sb2026p":[22988929,22988929,23394672,23394672,23394672,23394672,23394672,23394672,23394672,23394672,23394672,23394672]},"41812":{"sb2025":[16003683,14708004,15054930,15224566,14931568,15224566,15185521,12440566,11457862,11116406,10225010,11518754],"sb2026p":[11124587,11124587,11320930,11320930,11320930,11320930,11320930,11320930,11320930,11320930,11320930,11320930]},"41881":{"sb2025":[7147134,12364174,6852672,10060669,10305351,10305351,14680124,14740948,10276023,10276023,5462192,5462192],"sb2026p":[9977124,9977124,10153215,10153215,10153215,10153215,10153215,10153215,10153215,10153215,10153215,10153215]}},"remu2026_real":{"30676":[60283035,59297068,61635576,43699525,0,0,0,0,0,0,0,0],"40540":[13544770,13122406,14267164,13794032,0,0,0,0,0,0,0,0],"41800":[19015197,18296447,17216102,17135716,0,0,0,0,0,0,0,0],"41812":[14232115,14096053,13771721,10808980,0,0,0,0,0,0,0,0],"41831":[18146064,14945037,15282749,14598631,0,0,0,0,0,0,0,0],"41832":[35501573,32671118,33358958,32936884,0,0,0,0,0,0,0,0],"41833":[17282422,13100877,11483670,6582927,0,0,0,0,0,0,0,0],"41835":[24892074,24695941,25666849,22873230,0,0,0,0,0,0,0,0],"41836":[5741514,5714154,2963081,2838016,0,0,0,0,0,0,0,0],"41840":[9995495,10119066,10275397,9935880,0,0,0,0,0,0,0,0],"41850":[66355513,50121478,48055715,42069245,0,0,0,0,0,0,0,0],"41870":[40556962,40840057,41766634,40537951,0,0,0,0,0,0,0,0],"41880":[9916676,14005483,14586002,14156620,0,0,0,0,0,0,0,0],"41881":[2109092,2109092,2210463,2126019,0,0,0,0,0,0,0,0],"41882":[31251745,31767955,33806434,32407647,0,0,0,0,0,0,0,0]},"sb2026_real":{"30676":[34159728,34159728,33572148,32533401,0,0,0,0,0,0,0,0],"40540":[10490906,10490906,11015852,10873940,0,0,0,0,0,0,0,0],"41800":[15469897,15245534,15422203,15463468,0,0,0,0,0,0,0,0],"41812":[11618273,11618273,10888234,8382652,0,0,0,0,0,0,0,0],"41831":[13884146,11786665,12183972,11842062,0,0,0,0,0,0,0,0],"41832":[28685871,25981017,26119679,26404403,0,0,0,0,0,0,0,0],"41833":[15411141,11713112,10257576,5925297,0,0,0,0,0,0,0,0],"41835":[21393559,21393559,22106966,18957900,0,0,0,0,0,0,0,0],"41836":[5091736,4243113,873072,1023133,0,0,0,0,0,0,0,0],"41840":[8205792,8205792,8478747,8244359,0,0,0,0,0,0,0,0],"41850":[55286822,40975080,38055180,35007799,0,0,0,0,0,0,0,0],"41870":[34636493,34636493,35537321,34799285,0,0,0,0,0,0,0,0],"41880":[7946922,11644951,12048885,11699683,0,0,0,0,0,0,0,0],"41881":[1610234,1610234,1617802,1617802,0,0,0,0,0,0,0,0],"41882":[25697040,25697040,26904023,26523046,0,0,0,0,0,0,0,0]},"he2025":{"30676":[7072469,6712262,7520722,7970476,7735336,7217463,8144259,10944546,8015670,7814066,12867299,13497528],"41835":[0,0,0,0,0,0,0,0,0,0,0,1430720],"41882":[128207,283140,74375,91167,204256,0,0,0,0,0,0,0]},"he2026r":{"30676":[14138770,14503780,17354136,1497351,0,0,0,0,0,0,0,0]},"he2026p":{"30676":[8344577,8344577,8344577,8344577,8344577,8344577,8344577,8344577,8344577,8344577,8344577,8344577]},"dotacion_2025":{"41800":[1,1,1,1,1,1,1,1,1,1,2,2],"41870":[7,7,7,7,8,8,8,7,7,8,8,8],"30676":[12,14,13,13,12,12,13,11,12,12,12,12],"41812":[6,6,6,6,6,6,6,4,4,4,4,4],"41880":[3,3,3,3,3,2,2,2,3,2,2,2],"41881":[4,7,4,4,4,4,6,5,0,0,2,2],"41882":[6,6,10,11,12,11,9,9,9,9,7,8],"40540":[5,5,5,5,4,4,4,4,4,4,4,5],"40671":[1,1,1,1,1,1,1,0,0,0,0,0],"41831":[4,4,4,4,4,4,4,4,5,5,5,5],"41832":[8,8,8,8,8,7,6,6,8,8,10,10],"41833":[2,3,3,3,3,3,4,5,4,4,4,4],"41835":[3,2,2,2,3,3,3,3,4,4,4,5],"41836":[1,1,1,1,1,1,1,1,1,1,1,1],"41840":[0,2,2,2,2,2,2,2,2,2,2,2],"41850":[24,22,22,21,20,20,20,19,19,20,18,18]},"dotacion_2026":{"41800":[2,4,2,2,2,0,0,0,0,0,0,0],"41870":[9,18,9,7,8,0,0,0,0,0,0,0],"30676":[12,24,12,12,12,0,0,0,0,0,0,0],"41812":[4,8,4,4,4,0,0,0,0,0,0,0],"41880":[2,6,3,3,3,0,0,0,0,0,0,0],"41881":[1,2,1,1,1,0,0,0,0,0,0,0],"41882":[10,20,10,10,10,0,0,0,0,0,0,0],"40540":[5,10,5,5,5,0,0,0,0,0,0,0],"40671":[0,0,0,0,0,0,0,0,0,0,0,0],"41831":[4,8,4,4,4,0,0,0,0,0,0,0],"41832":[10,18,9,11,11,0,0,0,0,0,0,0],"41833":[3,4,1,1,1,0,0,0,0,0,0,0],"41835":[5,10,5,5,6,0,0,0,0,0,0,0],"41836":[1,2,1,1,1,0,0,0,0,0,0,0],"41840":[2,4,2,2,1,0,0,0,0,0,0,0],"41850":[15,30,13,13,14,0,0,0,0,0,0,0]}};
+
+// ─── CATEGORY DEFINITIONS ────────────────────────────────────────────────────
+const CATS = {
+  gerencia: { label: 'Gerencia total', cecos: ['41800','40540','40671'] },
+  cloud:    { label: 'Familia Cloud',  cecos: ['41870','41840'] },
+  iot:      { label: 'Familia IoT',    cecos: ['41836','41833','41831','41880','41835'] },
+  soporte:  { label: 'Área de soporte', cecos: ['41850','41832','30676','41882','41812','41881'] }
+};
+const CAT_KEYS = ['gerencia','cloud','iot','soporte'];
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MONTHS_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// ─── CECO SELECTOR (nombres visibles por CeCo) ────────────────────────────────
+const CECO_LABELS = {
+  '41800':'Gerencia SSDD', '40540':'Planif. Comercial', '40671':'Moderniz. Apps',
+  '41870':'Cloud Privado', '41840':'Touch',
+  '41836':'Crowds', '41833':'Elements', '41831':'Onway', '41880':'Vision', '41835':'Things',
+  '41850':'Tech Force', '41832':'Platform Eng.', '30676':'Op. Cloud', '41882':'Op. Digital',
+  '41812':'Agile Business', '41881':'Customer Success'
+};
+let selectedCeco = 'all';
+
+function populateCecoSelector() {
+  const sel = document.getElementById('cecoSelector');
+  CAT_KEYS.forEach(key => {
+    const cat = CATS[key];
+    const og = document.createElement('optgroup');
+    og.label = cat.label;
+    cat.cecos.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = `${c} · ${CECO_LABELS[c] || c}`;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+}
+
+// Devuelve la lista de cecos filtrada por el CeCo seleccionado (o todos si selectedCeco === 'all')
+function filt(cecos) {
+  return selectedCeco === 'all' ? cecos : cecos.filter(c => c === selectedCeco);
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function sumCecos(cecos, dataObj, field) {
+  return Array(12).fill(0).map((_,i) =>
+    cecos.reduce((s,c) => s + ((dataObj[c] && dataObj[c][field] ? dataObj[c][field][i] : 0) || 0), 0)
+  );
+}
+function sumCecosArr(cecos, dataArr) {
+  return Array(12).fill(0).map((_,i) =>
+    cecos.reduce((s,c) => s + ((dataArr[c] ? dataArr[c][i] : 0) || 0), 0)
+  );
+}
+function sumCecosHC(cecos, yr) {
+  const src = yr === 2025 ? RAW.dotacion_2025 : RAW.dotacion_2026;
+  return Array(12).fill(0).map((_,i) =>
+    cecos.reduce((s,c) => s + ((src[c] ? src[c][i] : 0) || 0), 0)
+  );
+}
+function fmt(n, short) {
+  if (!n) return '$0';
+  if (short) {
+    if (Math.abs(n) >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B';
+    if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+    return '$' + (n/1e3).toFixed(0) + 'K';
+  }
+  return '$' + Math.round(n).toLocaleString('es-CL');
+}
+function fmtPct(n) {
+  if (!isFinite(n)) return '—';
+  const v = Math.round(n * 100);
+  const cls = v >= 0 ? 'badge-pos' : 'badge-neg';
+  return `<span class="${cls}">${v >= 0 ? '+' : ''}${v}%</span>`;
+}
+function fmtDelta(n) {
+  if (!n) return '<span class="muted-cell">—</span>';
+  const cls = n >= 0 ? 'pos' : 'neg';
+  return `<span class="${cls}">${n >= 0 ? '+' : ''}${fmt(n)}</span>`;
+}
+function fmtHC(n) { return n || '<span class="muted-cell">—</span>'; }
+function cumSum(arr, upTo) {
+  let s = 0; for (let i = 0; i <= upTo; i++) s += arr[i]; return s;
+}
+
+// ─── CHART FACTORY ───────────────────────────────────────────────────────────
+const charts = {};
+function getChartTheme() {
+  const dark = document.body.classList.contains('dark-theme');
+  return {
+    grid: dark ? 'rgba(255,255,255,0.08)' : '#EEF2F7',
+    tick: dark ? '#93A1B5' : '#5A6A82',
+    hcTick: dark ? '#E37070' : '#D94F4F'
+  };
+}
+
+function makeChart(id, r25, p26, r26, hc) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  const moneyVals = [...r25, ...p26, ...r26].filter(Boolean);
+  const maxMoney = moneyVals.length ? Math.max(...moneyVals) : 1;
+  const hcVals = hc.filter(Boolean);
+  const maxHC = hcVals.length ? Math.max(...hcVals) * 1.3 : 10;
+  const theme = getChartTheme();
+  charts[id] = new Chart(ctx, {
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { type:'line', label:'2025 R', data: r25.map(v=>v||null), borderColor:'#1A3C6B', borderWidth:2, pointRadius:3, pointBackgroundColor:'#1A3C6B', tension:0.3, yAxisID:'y', spanGaps:false },
+        { type:'line', label:'2026 P', data: p26.map(v=>v||null), borderColor:'#C45911', borderWidth:2, pointRadius:3, pointBackgroundColor:'#C45911', tension:0.3, yAxisID:'y', spanGaps:false },
+        { type:'line', label:'2026 R', data: r26.map(v=>v||null), borderColor:'#2E5FA3', borderWidth:2, pointRadius:3, pointBackgroundColor:'#2E5FA3', tension:0.3, yAxisID:'y', borderDash:[0], spanGaps:false },
+        { type:'line', label:'HC 2026', data: hc.map(v=>v||null), borderColor:'#D94F4F', borderWidth:1.5, pointRadius:2, pointBackgroundColor:'#D94F4F', tension:0.3, yAxisID:'y2', borderDash:[5,4], spanGaps:false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      plugins: { legend:{ display:false }, tooltip:{ callbacks:{
+        label: ctx => ctx.dataset.yAxisID === 'y2'
+          ? `${ctx.dataset.label}: ${ctx.raw}`
+          : `${ctx.dataset.label}: ${fmt(ctx.raw)}`
+      }}},
+      scales: {
+        x: { grid:{ color: theme.grid }, ticks:{ font:{size:10}, color: theme.tick } },
+        y: { position:'left', grid:{ color: theme.grid }, ticks:{ font:{size:10}, color: theme.tick,
+          callback: v => fmt(v, true) }, max: maxMoney * 1.15 },
+        y2: { position:'right', grid:{ drawOnChartArea:false }, ticks:{ font:{size:10}, color: theme.hcTick,
+          stepSize:1 }, max: maxHC }
+      }
+    }
+  });
+}
+
+// ─── BUILD ALL CHARTS ────────────────────────────────────────────────────────
+function buildCharts() {
+  const G = filt(CATS.gerencia.cecos), S = filt(CATS.soporte.cecos), C = filt(CATS.cloud.cecos), I = filt(CATS.iot.cecos);
+
+  // GERENCIA
+  makeChart('c-ger-remu',
+    sumCecos(G, RAW.remu_data, 'r2025'),
+    sumCecos(G, RAW.remu_data, 'p2026'),
+    sumCecosArr(G, RAW.remu2026_real),
+    sumCecosHC(G, 2026)
+  );
+  makeChart('c-ger-sb',
+    sumCecos(G, RAW.sb_data, 'sb2025'),
+    sumCecos(G, RAW.sb_data, 'sb2026p'),
+    sumCecosArr(G, RAW.sb2026_real),
+    sumCecosHC(G, 2026)
+  );
+  // SOPORTE
+  makeChart('c-sop-remu',
+    sumCecos(S, RAW.remu_data, 'r2025'),
+    sumCecos(S, RAW.remu_data, 'p2026'),
+    sumCecosArr(S, RAW.remu2026_real),
+    sumCecosHC(S, 2026)
+  );
+  makeChart('c-sop-sb',
+    sumCecos(S, RAW.sb_data, 'sb2025'),
+    sumCecos(S, RAW.sb_data, 'sb2026p'),
+    sumCecosArr(S, RAW.sb2026_real),
+    sumCecosHC(S, 2026)
+  );
+  // CLOUD
+  makeChart('c-cloud-remu',
+    sumCecos(C, RAW.remu_data, 'r2025'),
+    sumCecos(C, RAW.remu_data, 'p2026'),
+    sumCecosArr(C, RAW.remu2026_real),
+    sumCecosHC(C, 2026)
+  );
+  makeChart('c-cloud-sb',
+    sumCecos(C, RAW.sb_data, 'sb2025'),
+    sumCecos(C, RAW.sb_data, 'sb2026p'),
+    sumCecosArr(C, RAW.sb2026_real),
+    sumCecosHC(C, 2026)
+  );
+  // IOT
+  makeChart('c-iot-remu',
+    sumCecos(I, RAW.remu_data, 'r2025'),
+    sumCecos(I, RAW.remu_data, 'p2026'),
+    sumCecosArr(I, RAW.remu2026_real),
+    sumCecosHC(I, 2026)
+  );
+  makeChart('c-iot-sb',
+    sumCecos(I, RAW.sb_data, 'sb2025'),
+    sumCecos(I, RAW.sb_data, 'sb2026p'),
+    sumCecosArr(I, RAW.sb2026_real),
+    sumCecosHC(I, 2026)
+  );
+}
+
+// ─── MONTHLY TABLES ──────────────────────────────────────────────────────────
+function buildTableRemu(tableId, mes, mode) {
+  // mode: 'mensual_remu' | 'mensual_sb' | 'acum_remu' | 'acum_sb'
+  const isSB = mode.includes('sb');
+  const isAcum = mode.includes('acum');
+  const rows = CAT_KEYS.map(key => {
+    const cat = CATS[key];
+    const cecos = filt(cat.cecos);
+    let v25, vP26, vR26, hc25, hc26;
+    if (!isSB) {
+      v25  = isAcum ? cecos.reduce((s,c)=>s+cumSum(RAW.remu_data[c]?.r2025||[], mes),0)
+                    : cecos.reduce((s,c)=>s+(RAW.remu_data[c]?.r2025?.[mes]||0),0);
+      vP26 = isAcum ? cecos.reduce((s,c)=>s+cumSum(RAW.remu_data[c]?.p2026||[], mes),0)
+                    : cecos.reduce((s,c)=>s+(RAW.remu_data[c]?.p2026?.[mes]||0),0);
+      vR26 = isAcum ? cecos.reduce((s,c)=>s+cumSum(RAW.remu2026_real[c]||[], mes),0)
+                    : cecos.reduce((s,c)=>s+(RAW.remu2026_real[c]?.[mes]||0),0);
+    } else {
+      v25  = isAcum ? cecos.reduce((s,c)=>s+cumSum(RAW.sb_data[c]?.sb2025||[], mes),0)
+                    : cecos.reduce((s,c)=>s+(RAW.sb_data[c]?.sb2025?.[mes]||0),0);
+      vP26 = isAcum ? cecos.reduce((s,c)=>s+cumSum(RAW.sb_data[c]?.sb2026p||[], mes),0)
+                    : cecos.reduce((s,c)=>s+(RAW.sb_data[c]?.sb2026p?.[mes]||0),0);
+      vR26 = isAcum ? cecos.reduce((s,c)=>s+cumSum(RAW.sb2026_real[c]||[], mes),0)
+                    : cecos.reduce((s,c)=>s+(RAW.sb2026_real[c]?.[mes]||0),0);
+    }
+    hc25 = cecos.reduce((s,c)=>s+(RAW.dotacion_2025[c]?.[mes]||0),0);
+    hc26 = cecos.reduce((s,c)=>s+(RAW.dotacion_2026[c]?.[mes]||0),0);
+    const delta = vR26 - v25;
+    const deltaPct = v25 ? delta / v25 : 0;
+    const deltaHC  = hc26 - hc25;
+    return { label: cat.label, v25, vP26, vR26, delta, deltaPct, deltaHC };
+  });
+
+  // Totals
+  const tot = rows.reduce((a,r) => ({
+    v25: a.v25+r.v25, vP26: a.vP26+r.vP26, vR26: a.vR26+r.vR26,
+    delta: a.delta+r.delta, deltaHC: a.deltaHC+r.deltaHC
+  }), {v25:0,vP26:0,vR26:0,delta:0,deltaHC:0});
+  tot.deltaPct = tot.v25 ? tot.delta / tot.v25 : 0;
+
+  const tbl = document.getElementById(tableId);
+  tbl.innerHTML = `
+    <thead><tr>
+      <th>Categoría</th>
+      <th>2025 R</th>
+      <th>2026 R</th>
+      <th>Δ Remu</th>
+      <th>Δ %</th>
+      <th>Δ HC</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r=>`<tr>
+        <td>${r.label}</td>
+        <td>${fmt(r.v25)}</td>
+        <td>${r.vR26 ? fmt(r.vR26) : '<span class="muted-cell">—</span>'}</td>
+        <td>${fmtDelta(r.delta)}</td>
+        <td>${fmtPct(r.deltaPct)}</td>
+        <td class="${r.deltaHC>=0?'pos':'neg'}">${r.deltaHC>=0?'+':''}${r.deltaHC}</td>
+      </tr>`).join('')}
+      <tr class="total-row">
+        <td>Total</td>
+        <td>${fmt(tot.v25)}</td>
+        <td>${tot.vR26 ? fmt(tot.vR26) : '—'}</td>
+        <td>${fmtDelta(tot.delta)}</td>
+        <td>${fmtPct(tot.deltaPct)}</td>
+        <td class="${tot.deltaHC>=0?'pos':'neg'}">${tot.deltaHC>=0?'+':''}${tot.deltaHC}</td>
+      </tr>
+    </tbody>`;
+}
+
+function buildMensualTables(mes) {
+  buildTableRemu('t-remu-anio', mes, 'mensual_remu');
+  buildTableRemu('t-sb-anio',   mes, 'mensual_sb');
+  buildTableRemu('t-remu-acum', mes, 'acum_remu');
+  buildTableRemu('t-sb-acum',   mes, 'acum_sb');
+}
+
+// ─── ANUAL TABLE ─────────────────────────────────────────────────────────────
+function buildAnualTable() {
+  const rows = CAT_KEYS.map(key => {
+    const { label, cecos: rawCecos } = CATS[key];
+    const cecos = filt(rawCecos);
+    const remuEne = cecos.reduce((s,c)=>s+(RAW.remu2026_real[c]?.[0]||0),0);
+    const remuDic = cecos.reduce((s,c)=>s+(RAW.remu2026_real[c]?.[11]||0),0);
+    const sbEne   = cecos.reduce((s,c)=>s+(RAW.sb2026_real[c]?.[0]||0),0);
+    const sbDic   = cecos.reduce((s,c)=>s+(RAW.sb2026_real[c]?.[11]||0),0);
+    const hcEne   = cecos.reduce((s,c)=>s+(RAW.dotacion_2026[c]?.[0]||0),0);
+    const hcDic   = cecos.reduce((s,c)=>s+(RAW.dotacion_2026[c]?.[11]||0),0);
+    const planEne = cecos.reduce((s,c)=>s+(RAW.remu_data[c]?.p2026?.[0]||0),0);
+    const planDic = cecos.reduce((s,c)=>s+(RAW.remu_data[c]?.p2026?.[11]||0),0);
+    return { label, remuEne, remuDic, dRemu: remuDic-remuEne, dRemuP: remuEne?(remuDic-remuEne)/remuEne:0,
+             sbEne, sbDic, dSB: sbDic-sbEne, dSBP: sbEne?(sbDic-sbEne)/sbEne:0,
+             hcEne, hcDic, dHC: hcDic-hcEne };
+  });
+
+  const tbl = document.getElementById('t-anual');
+  tbl.innerHTML = `
+    <thead>
+      <tr>
+        <th rowspan="2">Categoría</th>
+        <th colspan="4" class="center" style="background:#1A3C6B;color:white">Remuneración 2026</th>
+        <th colspan="4" class="center" style="background:#2E5FA3;color:white">Sueldo Base 2026</th>
+        <th colspan="3" class="center" style="background:#C45911;color:white">Headcount 2026</th>
+      </tr>
+      <tr>
+        <th>Ene-26 R</th><th>Dic-26 R</th><th>Δ Remu</th><th>Δ %</th>
+        <th>Ene Base</th><th>Dic Base</th><th>Δ Base</th><th>Δ %</th>
+        <th>Ene HC</th><th>Dic HC</th><th>Δ HC</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows.map(r=>`<tr>
+        <td>${r.label}</td>
+        <td>${r.remuEne?fmt(r.remuEne):'—'}</td>
+        <td>${r.remuDic?fmt(r.remuDic):'—'}</td>
+        <td>${fmtDelta(r.dRemu)}</td>
+        <td>${fmtPct(r.dRemuP)}</td>
+        <td>${r.sbEne?fmt(r.sbEne):'—'}</td>
+        <td>${r.sbDic?fmt(r.sbDic):'—'}</td>
+        <td>${fmtDelta(r.dSB)}</td>
+        <td>${fmtPct(r.dSBP)}</td>
+        <td>${fmtHC(r.hcEne)}</td>
+        <td>${fmtHC(r.hcDic)}</td>
+        <td class="${r.dHC>=0?'pos':'neg'}">${r.dHC>=0?'+':''}${r.dHC}</td>
+      </tr>`).join('')}
+    </tbody>`;
+}
+
+// ─── HE TABLES ───────────────────────────────────────────────────────────────
+const HE_CECOS = [
+  { ceco: '41835', label: 'Things' },
+  { ceco: '30676', label: 'Operación Cloud' },
+  { ceco: '41882', label: 'Operación Digital' }
+];
+
+function buildHETable(tableId, mes, mode) {
+  // mode: 'mes_plan' | 'acum_plan' | 'mes_real' | 'acum_real'
+  const isAcum = mode.includes('acum');
+  const isReal26 = mode.includes('real');
+
+  const getVal = (src, ceco, upTo) => {
+    const arr = src[ceco] || Array(12).fill(0);
+    return isAcum ? cumSum(arr, upTo) : arr[upTo];
+  };
+
+  const visibleCecos = selectedCeco === 'all' ? HE_CECOS : HE_CECOS.filter(h => h.ceco === selectedCeco);
+  const rows = visibleCecos.map(({ceco, label}) => {
+    const v2025 = getVal(RAW.he2025, ceco, mes);
+    const vPlan = getVal(RAW.he2026p, ceco, mes);
+    const vReal = getVal(RAW.he2026r, ceco, mes);
+    const compA = isReal26 ? vReal : v2025;
+    const compB = vPlan;
+    const delta = compA - compB;
+    const pct   = compB ? delta / compB : 0;
+    return { ceco, label, compA, compB, delta, pct };
+  });
+
+  const colA = isReal26 ? '2026 R' : '2025 R';
+  const tbl = document.getElementById(tableId);
+  tbl.innerHTML = `
+    <thead><tr>
+      <th>CeCo</th><th>Producto</th>
+      <th>${colA}</th><th>2026 Plan</th><th>Δ</th><th>Δ %</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r=>`<tr>
+        <td>${r.ceco}</td>
+        <td>${r.label}</td>
+        <td>${r.compA ? fmt(r.compA) : '<span class="muted-cell">—</span>'}</td>
+        <td>${fmt(r.compB)}</td>
+        <td>${fmtDelta(r.delta)}</td>
+        <td>${fmtPct(r.pct)}</td>
+      </tr>`).join('')}
+      <tr class="total-row">
+        <td colspan="2">Total</td>
+        <td>${fmt(rows.reduce((s,r)=>s+r.compA,0))}</td>
+        <td>${fmt(rows.reduce((s,r)=>s+r.compB,0))}</td>
+        <td>${fmtDelta(rows.reduce((s,r)=>s+r.delta,0))}</td>
+        <td>${fmtPct(rows.reduce((s,r)=>s+r.delta,0)/rows.reduce((s,r)=>s+r.compB,0)||0)}</td>
+      </tr>
+    </tbody>`;
+}
+
+function buildHETables(mes) {
+  buildHETable('t-he-mes-plan',  mes, 'mes_plan');
+  buildHETable('t-he-acum-plan', mes, 'acum_plan');
+  buildHETable('t-he-mes-real',  mes, 'mes_real');
+  buildHETable('t-he-acum-real', mes, 'acum_real');
+}
+
+// ─── DOTACION TABLES ─────────────────────────────────────────────────────────
+const DOT_GROUPS = [
+  { rows: [['41836','Crowds'],['41833','Elements']] },
+  { rows: [['41831','Onway'],['41880','Vision'],['41835','Things'],['41870','Cloud Privado'],['41840','Touch']] },
+  { rows: [['41800','Gerencia SSDD'],['40540','Planif. Comercial'],['40671','Moderniz. Apps'],['41850','Tech Force'],['41832','Platform Eng.']] },
+  { rows: [['30676','Op. Cloud'],['41882','Op. Digital'],['41812','Agile Business'],['41881','Customer Success']] }
+];
+
+function buildDotTable(tableId, yr) {
+  const src = yr === 2025 ? RAW.dotacion_2025 : RAW.dotacion_2026;
+  const tbl = document.getElementById(tableId);
+  let html = `<thead><tr><th class="ceco-col">CeCo</th><th class="ceco-col">Producto</th>`;
+  MONTHS.forEach(m => html += `<th>${m}</th>`);
+  html += `</tr></thead><tbody>`;
+
+  let renderedAnyGroup = false;
+  DOT_GROUPS.forEach((grp) => {
+    const visibleRows = selectedCeco === 'all' ? grp.rows : grp.rows.filter(([c]) => c === selectedCeco);
+    if (!visibleRows.length) return;
+    if (renderedAnyGroup) html += `<tr class="group-sep"><td colspan="14"></td></tr>`;
+    visibleRows.forEach(([ceco, label]) => {
+      const vals = src[ceco] || Array(12).fill(0);
+      html += `<tr><td class="ceco-label">${ceco}</td><td class="ceco-label">${label}</td>`;
+      vals.forEach(v => { html += `<td class="${v===0?'zero':''}">${v||'—'}</td>`; });
+      html += `</tr>`;
+    });
+    renderedAnyGroup = true;
+  });
+
+  // Totals
+  const allCecos = filt(DOT_GROUPS.flatMap(g=>g.rows.map(r=>r[0])));
+  const cloudCecos = filt(['41870','41840']);
+  const iotCecos   = filt(['41836','41833','41831','41880','41835']);
+  const opGerCecos = filt(['41800','40540','40671','41850','41832','30676','41882','41812','41881']);
+
+  const sumRow = (cecos) => Array(12).fill(0).map((_,i)=>cecos.reduce((s,c)=>s+(src[c]?.[i]||0),0));
+
+  html += `<tr class="group-sep"><td colspan="14"></td></tr>`;
+  [
+    ['Total Colaboradores mes', allCecos],
+    ['Total Cloud', cloudCecos],
+    ['Total IoT', iotCecos],
+    ['Total Operacional+Gerencia', opGerCecos]
+  ].forEach(([label, cecos]) => {
+    const vals = sumRow(cecos);
+    html += `<tr class="total-row"><td colspan="2">${label}</td>`;
+    vals.forEach(v => html += `<td>${v||'—'}</td>`);
+    html += `</tr>`;
+  });
+
+  html += `</tbody>`;
+  tbl.innerHTML = html;
+}
+
+// ─── PAGE NAV ─────────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function onMesChange() {
+  const mes = parseInt(document.getElementById('mesSelector').value);
+  buildMensualTables(mes);
+  buildHETables(mes);
+}
+
+// ─── CECO FILTER ────────────────────────────────────────────────────────────
+function onCecoChange() {
+  selectedCeco = document.getElementById('cecoSelector').value;
+  refreshAll();
+}
+
+function refreshAll() {
+  const mes = parseInt(document.getElementById('mesSelector').value);
+  buildCharts();
+  buildMensualTables(mes);
+  buildAnualTable();
+  buildHETables(mes);
+  buildDotTable('t-dot-2025', 2025);
+  buildDotTable('t-dot-2026', 2026);
+}
+
+// ─── INFORME PDF (último informe ejecutivo generado) ─────────────────────────
+// El PDF ya NO va embebido en este HTML (se sacó el base64 para aligerar el
+// archivo). En su lugar, el botón abre la carpeta de SharePoint donde se
+// publica el informe más reciente.
+const INFORME_PDF_URL = "https://grupoentel.sharepoint.com/:b:/r/sites/PlanificacinComercialOcean/Documentos%20compartidos/General/Power%20Apps/Informe_Remuneraciones_Dotacion_SSDD_202605_v03.pdf?csf=1&web=1&e=0nav48";
+function downloadInforme() {
+  if (!INFORME_PDF_URL) {
+    alert('El informe aún no ha sido generado en esta versión de la aplicación.');
+    return;
+  }
+  window.open(INFORME_PDF_URL, '_blank', 'noopener');
+}
+
+// ─── THEME TOGGLE ────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const dark = document.body.classList.toggle('dark-theme');
+  const btn = document.getElementById('themeToggle');
+  btn.textContent = dark ? '☀️' : '🌙';
+  btn.setAttribute('aria-label', dark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro');
+  buildCharts(); // recalcula colores de ejes/grillas para el nuevo tema
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  populateCecoSelector();
+  buildCharts();
+  const mes = parseInt(document.getElementById('mesSelector').value);
+  buildMensualTables(mes);
+  buildAnualTable();
+  buildHETables(mes);
+  buildDotTable('t-dot-2025', 2025);
+  buildDotTable('t-dot-2026', 2026);
+});
+</script>
+<script>
+// ─── INFORME PDF ────────────────────────────────────────────────────────────
+// El PDF ya no se embebe aquí (ver INFORME_PDF_URL más arriba, en downloadInforme()).
+const INFORME_PDF_FILENAME = "Informe_Remuneraciones_Dotacion_SSDD_202605_v03.pdf";
+const INFORME_PDF_FECHA_GENERACION = "02 de julio de 2026";
+</script>
+</body>
+</html>
